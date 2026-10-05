@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Mengarahkan...</title>
+  <style>
+    body { font-family: sans-serif; text-align: center; padding-top: 20%; background: #f4f4f9; }
+  </style>
+</head>
+<body>
+  <h3 id="status">Mengarahkan ke halaman tujuan...</h3>
+
+  <script>
+    const GAS_URL = "URL_WEB_APP_GAS_ANDA"; // Tempel URL GAS di sini
+
+    async function handleRedirect() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const slug = urlParams.get('s');
+
+      if (!slug) {
+        document.getElementById("status").innerText = "Link tidak valid.";
+        return;
+      }
+
+      try {
+        const response = await fetch(`${GAS_URL}?slug=${encodeURIComponent(slug)}`);
+        const res = await response.json();
+
+        if (res.success && res.url) {
+          window.location.href = res.url;
+        } else {
+          document.getElementById("status").innerText = "Link tidak ditemukan atau sudah kadaluwarsa.";
+        }
+      } catch (err) {
+        document.getElementById("status").innerText = "Gagal memuat halaman tujuan.";
+      }
+    }
+
+    handleRedirect();
+  </script>
+</body>
+</html>
