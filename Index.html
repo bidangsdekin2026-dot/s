@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Short Link Generator</title>
+  <style>
+    body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f4f4f9; margin: 0; }
+    .card { background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+    h2 { margin-top: 0; text-align: center; }
+    input, button { width: 100%; padding: 0.75rem; margin-top: 0.5rem; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+    button { background: #007bff; color: white; font-weight: bold; border: none; cursor: pointer; margin-top: 1rem; }
+    button:hover { background: #0056b3; }
+    #result { margin-top: 1rem; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Pemendek URL</h2>
+    <form id="shortenForm">
+      <input type="url" id="longUrl" placeholder="Masukkan URL panjang..." required>
+      <input type="text" id="customSlug" placeholder="Custom text (opsional)">
+      <button type="submit" id="btnSubmit">Pendekkan Link</button>
+    </form>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const GAS_URL = "URL_WEB_APP_GAS_ANDA"; // Tempel URL GAS di sini
+
+    document.getElementById("shortenForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById("btnSubmit");
+      const resultDiv = document.getElementById("result");
+      
+      btn.disabled = true;
+      btn.innerText = "Memproses...";
+      resultDiv.innerHTML = "";
+
+      const payload = {
+        url: document.getElementById("longUrl").value,
+        slug: document.getElementById("customSlug").value
+      };
+
+      try {
+        const response = await fetch(GAS_URL, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+
+        if (res.success) {
+          // Mengarahkan ke file redirect.html dengan parameter ?s=slug
+          const redirectUrl = `${window.location.origin}${window.location.pathname.replace('index.html', '')}redirect.html?s=${res.slug}`;
+          resultDiv.innerHTML = `
+            <p style="color: green;">Berhasil!</p>
+            <input type="text" value="${redirectUrl}" id="shortUrlInput" readonly>
+            <button onclick="navigator.clipboard.writeText('${redirectUrl}')">Salin Link</button>
+          `;
+        } else {
+          resultDiv.innerHTML = `<p style="color: red;">Gagal: ${res.message}</p>`;
+        }
+      } catch (err) {
+        resultDiv.innerHTML = `<p style="color: red;">Terjadi kesalahan koneksi.</p>`;
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Pendekkan Link";
+      }
+    });
+  </script>
+</body>
+</html>
